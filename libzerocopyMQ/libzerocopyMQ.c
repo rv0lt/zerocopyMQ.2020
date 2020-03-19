@@ -11,11 +11,11 @@
 
 #define TAM  65536 //2¹⁶
 
-int fd;
-struct iovec iov[2];
-char *pchar = 'C';
-char buf[TAM];
 
+char *pchar;
+char buf[TAM];
+int leido;
+/*-----------------------------------------------*/
 int connect_socket(){
 
     int fd; //descriptor del socket
@@ -46,6 +46,18 @@ int connect_socket(){
 	
     return fd;
 }
+/*-------------------------------------------------*/
+int wait_response(int fd){
+    if ( (leido=read(fd, buf, TAM)) < 0){
+		perror("error en read");
+		close(fd);
+		return -1;
+    }
+    if (buf[0]!= '0')
+        return -1;
+    else 
+        return 0;
+}
 /*----------------------------------------------------------------------------*/
 int send_request(const unsigned int op, const char *cola, const void *mensaje, size_t tam, 
                     void **mensaje_2, size_t *tam_2, bool blocking) {
@@ -58,6 +70,8 @@ int send_request(const unsigned int op, const char *cola, const void *mensaje, s
     }
 /*----------------------------------------------------------------------------*/
 int createMQ(const char *cola){
+    int fd;
+    struct iovec iov[2];    
     pchar = 'C';
 
     if ((fd= connect_socket(&fd))<0){
@@ -69,52 +83,38 @@ int createMQ(const char *cola){
     }
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
-    //writev(fd, iov,1);
 
-    printf("-------%d\n", sizeof(cola));
-    printf("__________%d\n", strlen(cola));
    
-    
-  //  iov[0].iov_base= strlen(cola);
-  //  iov[0].iov_len= 8;
 
     iov[1].iov_base=cola;
     iov[1].iov_len=sizeof(cola);  
     writev(fd, iov,2);
-    /*data.op='C';
-    data.cola=cola;
-    data.get_mensaje=NULL;
-    data.get_mes_tam=0;
-    data.put_mensaje=NULL;
-    data.put_mes_tam=0;
-    data.blocking=0;
+    /*--------------------------------*/
 
-    iov[0].iov_base=&data;
-    iov[0].iov_len=sizeof(struct comun);
-    writev(fd, iov,1);
-    */
-    /*
-    while ((leido=read(0, buf, TAM))>0) {
-                if (write(fd, buf, leido)<0) {
-                        perror("error en write");
-                        close(fd);
-                        return 1;
-                }
-                if ((leido=read(fd, buf, TAM))<0) {
-                        perror("error en read");
-                        close(fd);
-                        return 1;
-                }
-		write(1, buf, leido);
-        }//while
-        */
-
-    
-    return 0;
+    return wait_response(fd);
 }
 
 int destroyMQ(const char *cola){
-    return 0;
+    int fd;
+    struct iovec iov[2];
+    pchar = 'D';
+
+    if ((fd= connect_socket(&fd))<0){
+        return -1;
+    }
+    if (sizeof(cola) > TAM){
+        perror("Nombre de cola demasiado grande");
+        return -1;
+    }
+    
+    iov[0].iov_base= &pchar;
+    iov[0].iov_len= sizeof(pchar) ;
+
+    iov[1].iov_base=cola;
+    iov[1].iov_len=sizeof(cola);  
+    writev(fd, iov,2);
+
+    return wait_response(fd);
 }
 int put(const char *cola, const void *mensaje, uint32_t tam) {
     return 0;
