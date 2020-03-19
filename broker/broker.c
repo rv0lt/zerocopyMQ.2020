@@ -2,12 +2,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "comun.h"
+#include "comun.c"
 #include "diccionario.h"
 #include "cola.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define TAM 1024
+#define TAM  65536 //2¹⁶
 
 
 int main(int argc, char *argv[]) {
@@ -15,6 +16,7 @@ int main(int argc, char *argv[]) {
 	unsigned int tam_dir;
 	struct sockaddr_in dir, dir_cliente;
 	char buf[TAM];
+	char *pchar;
 	int opcion=1;
 
 	if (argc!=2) {
@@ -44,26 +46,52 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	while (1) {
+
 		tam_dir=sizeof(dir_cliente);
 		if ((s_conec=accept(s, (struct sockaddr *)&dir_cliente, &tam_dir))<0){
 			perror("error en accept");
 			close(s);
 			return 1;
 		}
-		while ((leido=read(s_conec, buf, TAM))>0) {
-			if (write(s_conec, buf, leido)<0) {
-				perror("error en write");
-				close(s);
-				close(s_conec);
-				return 1;
-			}
-		}
-		if (leido<0) {
+		
+        if ( (leido=read(s_conec, buf, sizeof(pchar))) < 0){
 			perror("error en read");
 			close(s);
 			close(s_conec);
 			return 1;
-		}
+        }//read de la operacion
+
+		printf("Se ha seleccionado la operacion: %c \n", buf[0]);		
+
+		switch (buf[0]){
+		case 'C':
+        	if ( (leido=read(s_conec, buf, TAM)) < 0){
+				perror("error en read");
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+
+			printf("He creado la cola %s \n", buf);			
+
+			break;
+		//FIN DEL CASE C
+		default:
+			break;
+		}// switch
+
+
+
+        
+        /*
+        if (write(1, buf, leido)<0) {
+		    perror("error en write");
+			close(s);
+			close(s_conec);
+			return 1;
+        }//write
+        */        
+        
 		close(s_conec);
 	}
 	close(s);

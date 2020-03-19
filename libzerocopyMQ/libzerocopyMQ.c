@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "zerocopyMQ.h"
 #include "comun.h"
+#include "comun.c"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -8,8 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TAM 1024
+#define TAM  65536 //2¹⁶
 
+int fd;
+struct iovec iov[2];
+char *pchar = 'C';
 char buf[TAM];
 
 int connect_socket(){
@@ -32,7 +36,6 @@ int connect_socket(){
     dir.sin_family=PF_INET;
     dir.sin_port=htons(atoi(getenv("BROKER_PORT")));
 
-   // memcpy(&dir.sin_addr, host_info-> h_addr_list[0], host_info->h_length);
 
 
 	if (connect(fd, (struct sockaddr *)&dir, sizeof(dir)) < 0){
@@ -55,12 +58,42 @@ int send_request(const unsigned int op, const char *cola, const void *mensaje, s
     }
 /*----------------------------------------------------------------------------*/
 int createMQ(const char *cola){
-    int leido;
-	int fd;
+    pchar = 'C';
+
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
+    if (sizeof(cola) > TAM){
+        perror("Nombre de cola demasiado grande");
+        return -1;
+    }
+    iov[0].iov_base= &pchar;
+    iov[0].iov_len= sizeof(pchar) ;
+    //writev(fd, iov,1);
 
+    printf("-------%d\n", sizeof(cola));
+    printf("__________%d\n", strlen(cola));
+   
+    
+  //  iov[0].iov_base= strlen(cola);
+  //  iov[0].iov_len= 8;
+
+    iov[1].iov_base=cola;
+    iov[1].iov_len=sizeof(cola);  
+    writev(fd, iov,2);
+    /*data.op='C';
+    data.cola=cola;
+    data.get_mensaje=NULL;
+    data.get_mes_tam=0;
+    data.put_mensaje=NULL;
+    data.put_mes_tam=0;
+    data.blocking=0;
+
+    iov[0].iov_base=&data;
+    iov[0].iov_len=sizeof(struct comun);
+    writev(fd, iov,1);
+    */
+    /*
     while ((leido=read(0, buf, TAM))>0) {
                 if (write(fd, buf, leido)<0) {
                         perror("error en write");
@@ -73,9 +106,9 @@ int createMQ(const char *cola){
                         return 1;
                 }
 		write(1, buf, leido);
-        }
+        }//while
+        */
 
-	return 0;
     
     return 0;
 }
