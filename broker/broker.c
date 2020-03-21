@@ -7,8 +7,10 @@
 #include "cola.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 
 #define TAM  65536 //2¹⁶
+
 /*----------------------------------------------------*/
 void return_to_client(int fd, char* aux){
 	struct iovec iov[1];    
@@ -127,7 +129,6 @@ int main(int argc, char *argv[]) {
 			}//if
 			if (dic_put(dic, aux, cola) <0){
 				perror("Nombre de cola ya existente");
-
 				return_to_client(s_conec,'-1');
 				continue;
 			}//if
@@ -144,13 +145,17 @@ int main(int argc, char *argv[]) {
         	}//read
 			if (dic_remove_entry(dic, buf, free_cola) < 0){
 				perror("No existe ese nombre de cola \n");
-
 				return_to_client(s_conec, '-1');
 				continue;
 			}
 			see_dic(dic);
 			break;
 		//FIN DEL CASE D
+		case 'P': //Poner un nuevo mensaje a una cola determinada
+
+
+			break;
+		//FIN DEL CASE P
 		default:
 			break;
 		}// switch

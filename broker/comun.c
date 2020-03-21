@@ -10,9 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-struct comun
+struct message
 {
-    char op;
     const char *cola;
     const void *put_mensaje;
     size_t put_mes_tam;

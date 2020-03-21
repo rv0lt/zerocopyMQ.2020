@@ -8,9 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <math.h>
 #define TAM  65536 //2¹⁶
-
+#define TAM_MAX_MESSAGE pow(2,32) //2³² 
+/*
+export BROKER_HOST=Rv0lt
+export BROKER_PORT=12345
+*/
 
 char *pchar;
 char buf[TAM];
@@ -48,7 +52,7 @@ int connect_socket(){
 }
 /*-------------------------------------------------*/
 int wait_response(int fd){
-    if ( (leido=read(fd, buf, TAM)) < 0){
+    if ( (leido=read(fd, buf, sizeof(pchar))) < 0){
 		perror("error en read");
 		close(fd);
 		return -1;
@@ -99,13 +103,15 @@ int destroyMQ(const char *cola){
     struct iovec iov[2];
     pchar = 'D';
 
-    if ((fd= connect_socket(&fd))<0){
-        return -1;
-    }
     if (sizeof(cola) > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
+
+    if ((fd= connect_socket(&fd))<0){
+        return -1;
+    }
+
     
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
@@ -117,6 +123,41 @@ int destroyMQ(const char *cola){
     return wait_response(fd);
 }
 int put(const char *cola, const void *mensaje, uint32_t tam) {
+    int fd;
+    struct iovec iov[2];
+    pchar = 'P';
+    struct message data;
+    if (tam > TAM_MAX_MESSAGE){
+        perror("Tamaño del mensaje demasiado grande");
+        return -1;
+    }
+    if ((fd= connect_socket(&fd))<0){
+        return -1;
+    }
+
+    /*
+    Revisando el fichero test me doy cuenta que mensaje es un puntero a la posicion de memoria donde
+    se ubica el mensasje a guardar
+    IDEA: serializar los datos para poderlos mandar
+    
+	https://stackoverflow.com/questions/15707933/how-to-serialize-a-struct-in-c
+
+    http://mgarciaisaia.github.io/tutorial-c/blog/2015/02/27/dream-of-serialization/
+    */
+    iov[0].iov_base= &pchar;
+    iov[0].iov_len= sizeof(pchar) ;
+
+    data.cola=cola;
+    data.get_mensaje=mensaje;
+    data.get_mes_tam=tam;
+    data.put_mensaje=NULL;
+    data.put_mes_tam=NULL;
+    data.blocking=false;
+
+    //TODO descubrir como serializar hulio
+
+    writev(fd, iov,2);
+
     return 0;
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
