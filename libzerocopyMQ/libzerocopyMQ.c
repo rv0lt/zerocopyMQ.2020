@@ -9,8 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#define TAM  65536 //2¹⁶
-#define TAM_MAX_MESSAGE pow(2,32) //2³² 
+
 /*
 export BROKER_HOST=Rv0lt
 export BROKER_PORT=12345
@@ -88,15 +87,16 @@ int createMQ(const char *cola){
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
 
-   
 
-    iov[1].iov_base=cola;
-    iov[1].iov_len=sizeof(cola);  
+    iov[1].iov_base= cola;
+    iov[1].iov_len= sizeof(cola);  
     writev(fd, iov,2);
     /*--------------------------------*/
 
     return wait_response(fd);
 }
+
+
 
 int destroyMQ(const char *cola){
     int fd;
@@ -116,17 +116,18 @@ int destroyMQ(const char *cola){
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
 
-    iov[1].iov_base=cola;
-    iov[1].iov_len=sizeof(cola);  
+    iov[1].iov_base= cola;
+    iov[1].iov_len= sizeof(cola);  
     writev(fd, iov,2);
 
     return wait_response(fd);
 }
 int put(const char *cola, const void *mensaje, uint32_t tam) {
+
     int fd;
-    struct iovec iov[2];
+    struct iovec iov[5];
     pchar = 'P';
-    struct message data;
+    int a;
     if (tam > TAM_MAX_MESSAGE){
         perror("Tamaño del mensaje demasiado grande");
         return -1;
@@ -144,21 +145,30 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
 
     http://mgarciaisaia.github.io/tutorial-c/blog/2015/02/27/dream-of-serialization/
     */
+
     iov[0].iov_base= &pchar;
-    iov[0].iov_len= sizeof(pchar) ;
+    iov[0].iov_len= sizeof(pchar);
 
-    data.cola=cola;
-    data.get_mensaje=mensaje;
-    data.get_mes_tam=tam;
-    data.put_mensaje=NULL;
-    data.put_mes_tam=NULL;
-    data.blocking=false;
+    a = sizeof(cola);
 
-    //TODO descubrir como serializar hulio
+    iov[1].iov_base= &a;
+    iov[1].iov_len= sizeof(a);
+    iov[2].iov_base= cola;
+    iov[2].iov_len= sizeof(cola); 
 
-    writev(fd, iov,2);
 
-    return 0;
+	printf("Contenido \n%s\n", mensaje);			
+    
+
+
+    iov[3].iov_base= &tam;
+    iov[3].iov_len= sizeof(tam);
+    iov[4].iov_base= mensaje;
+    iov[4].iov_len= tam;
+
+    writev(fd, iov,5);
+
+    return wait_response(fd);
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     return 0;

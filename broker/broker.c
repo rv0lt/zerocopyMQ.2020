@@ -21,8 +21,8 @@ void return_to_client(int fd, char* aux){
     iov[0].iov_len=sizeof(pchar);  
     
 	writev(fd, iov,1);
-
 }
+
 
 /*---------------------------------------------------*/
 void free_cola(char *c, void *v){
@@ -41,12 +41,37 @@ void see_dic (struct diccionario *d){
 	dic_visit(d, print_dic);
 	printf("--------------\n");
 }
+void print_cola(void *v){
+	void * msg = v;
+	printf("%s", msg);
+}
+void see_cola (struct cola *c){
+	printf("_______________\n");
+	printf("CONTENIDO DE LA COLA\n");
+	cola_visit(c, print_cola);
+	printf("_______________\n");
+
+}
+
+struct cola *get_cola (struct diccionario *d, char* name_cola){
+	struct cola *aux;
+	int error;
+	aux= dic_get(d,name_cola,&error);
+	if (error < 0){
+		perror("Cola no existente");
+		return NULL;
+	}
+	else
+		return aux;
+}
 /*-----------------------------------------------------*/
 int main(int argc, char *argv[]) {
 	int s, s_conec, leido;
 	unsigned int tam_dir;
 	struct sockaddr_in dir, dir_cliente;
 	char buf[TAM];
+	int size_cola;
+	int size_msg;
 	char *pchar;
 	struct cola *cola;
 	int opcion=1;
@@ -152,8 +177,51 @@ int main(int argc, char *argv[]) {
 			break;
 		//FIN DEL CASE D
 		case 'P': //Poner un nuevo mensaje a una cola determinada
-
-
+			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("---%d\n", size_cola);
+			char * name_cola = malloc(size_cola);
+			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("He seleccionado la cola %s \n", name_cola);			
+			if ( (leido=read(s_conec,&size_msg , sizeof(int))) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("____ %d\n", size_msg);
+			void *msg = malloc(size_msg);
+			if ( (leido=read(s_conec, msg, size_msg)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read			
+			//printf("Contenido \n%s\n", msg);			
+			
+			cola= get_cola(dic,name_cola);
+			if (cola == NULL){
+				return_to_client(s_conec,'-1');
+				free(name_cola);
+				continue;				
+			}
+			cola_push_back(cola, msg);
+			//printf("Contenido de la cola\n");
+			see_cola(cola);
+			free(name_cola);			
 			break;
 		//FIN DEL CASE P
 		default:
@@ -161,16 +229,7 @@ int main(int argc, char *argv[]) {
 		}// switch
 
 
-
-        
-        /*
-        if (write(1, buf, leido)<0) {
-		    perror("error en write");
-			close(s);
-			close(s_conec);
-			return 1;
-        }//write
-        */        
+       
 		return_to_client(s_conec, '0');
 		close(s_conec);
 	}

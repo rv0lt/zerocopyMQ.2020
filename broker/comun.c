@@ -10,12 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-struct message
+
+#define TAM  65536 //2¹⁶
+#define TAM_MAX_MESSAGE pow(2,32) //2³² 
+
+struct put_struct
 {
-    const char *cola;
     const void *put_mensaje;
-    size_t put_mes_tam;
-    void **get_mensaje; 
-    size_t *get_mes_tam; 
-    int blocking;
+    size_t put_mes_len;
+
 };
