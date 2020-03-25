@@ -123,11 +123,10 @@ int destroyMQ(const char *cola){
     return wait_response(fd);
 }
 int put(const char *cola, const void *mensaje, uint32_t tam) {
-
     int fd;
     struct iovec iov[5];
     pchar = 'P';
-    int a;
+    int a= sizeof(cola);;
     if (tam > TAM_MAX_MESSAGE){
         perror("Tamaño del mensaje demasiado grande");
         return -1;
@@ -136,31 +135,12 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
         return -1;
     }
 
-    /*
-    Revisando el fichero test me doy cuenta que mensaje es un puntero a la posicion de memoria donde
-    se ubica el mensasje a guardar
-    IDEA: serializar los datos para poderlos mandar
-    
-	https://stackoverflow.com/questions/15707933/how-to-serialize-a-struct-in-c
-
-    http://mgarciaisaia.github.io/tutorial-c/blog/2015/02/27/dream-of-serialization/
-    */
-
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar);
-
-    a = sizeof(cola);
-
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
     iov[2].iov_len= sizeof(cola); 
-
-
-	printf("Contenido \n%s\n", mensaje);			
-    
-
-
     iov[3].iov_base= &tam;
     iov[3].iov_len= sizeof(tam);
     iov[4].iov_base= mensaje;
@@ -171,5 +151,39 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     return wait_response(fd);
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
-    return 0;
+    int fd;
+    struct iovec iov[2];
+    int size_msg;
+    if (sizeof(cola) > TAM){
+        perror("Nombre de cola demasiado grande");
+        return -1;
+    }
+    if ((fd= connect_socket(&fd))<0){
+        return -1;
+    }
+
+    if(!blocking){
+    pchar = 'G';
+    iov[0].iov_base= &pchar;
+    iov[0].iov_len= sizeof(pchar) ;    
+    iov[1].iov_base= cola;
+    iov[1].iov_len= sizeof(cola);    
+    writev(fd, iov,2);
+    }//if !blocking
+
+	if ( (leido=read(fd,tam, sizeof(int))) < 0){
+		perror("error en read");
+		close(fd);
+		return 1;
+    }//read
+	printf("____ %d\n", *tam);
+	void *m = (malloc(1024));
+	if ( (leido=read(fd, m, *tam)) < 0){
+		perror("error en read");
+		close(fd);
+		return 1;
+    }//read
+    mensaje = &m;
+    printf("Contenido \n%s\n", *mensaje);
+    return wait_response(fd);
 }

@@ -15,15 +15,36 @@
 void return_to_client(int fd, char* aux){
 	struct iovec iov[1];    
 	char *pchar;
-	pchar=aux;
+	pchar= aux;
 
-    iov[0].iov_base=&pchar;
-    iov[0].iov_len=sizeof(pchar);  
+    iov[0].iov_base= &pchar;
+    iov[0].iov_len= sizeof(pchar);  
     
 	writev(fd, iov,1);
 }
 
+void send_msg_to_client(int fd, void *msg){
+	struct iovec iov[2];
+	printf("TEST\n");
+	if (msg == NULL){
+		printf("aaaaaaaa");
+		int a =0;
+		iov[0].iov_base= &a;
+		iov[0].iov_len= sizeof(a);
+		iov[1].iov_base= NULL;
+		iov[1].iov_len= sizeof(NULL);
+	}
+	else{
+		int a = strlen(msg);
+		printf("---%d\n", a);
 
+		iov[0].iov_base=&a;
+		iov[0].iov_len=sizeof(a);
+		iov[1].iov_base=msg;
+		iov[1].iov_len=a;
+	}
+	writev(fd, iov,2);
+}
 /*---------------------------------------------------*/
 void free_cola(char *c, void *v){
 	free(c);
@@ -43,7 +64,7 @@ void see_dic (struct diccionario *d){
 }
 void print_cola(void *v){
 	void * msg = v;
-	printf("%s", msg);
+	printf("%s\n", msg);
 }
 void see_cola (struct cola *c){
 	printf("_______________\n");
@@ -52,7 +73,7 @@ void see_cola (struct cola *c){
 	printf("_______________\n");
 
 }
-
+/*----------------------------------------------------------------------*/
 struct cola *get_cola (struct diccionario *d, char* name_cola){
 	struct cola *aux;
 	int error;
@@ -63,6 +84,17 @@ struct cola *get_cola (struct diccionario *d, char* name_cola){
 	}
 	else
 		return aux;
+}
+char *get_msg (struct cola *c){
+	char * aux;
+	int error;
+	aux= cola_pop_front(c,&error);
+	if (error < 0){
+		perror("Cola vacía");
+		return NULL;
+	}
+	else
+		return aux;	
 }
 /*-----------------------------------------------------*/
 int main(int argc, char *argv[]) {
@@ -76,6 +108,8 @@ int main(int argc, char *argv[]) {
 	struct cola *cola;
 	int opcion=1;
 	struct diccionario *dic;
+	void *msg;
+	char *name_cola;
 	if (argc!=2) {
 		fprintf(stderr, "Uso: %s puerto\n", argv[0]);
 		return 1;
@@ -185,7 +219,7 @@ int main(int argc, char *argv[]) {
 				return 1;
         	}//read
 			//printf("---%d\n", size_cola);
-			char * name_cola = malloc(size_cola);
+			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
@@ -202,7 +236,7 @@ int main(int argc, char *argv[]) {
 				return 1;
         	}//read
 			//printf("____ %d\n", size_msg);
-			void *msg = malloc(size_msg);
+			msg = malloc(size_msg);
 			if ( (leido=read(s_conec, msg, size_msg)) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
@@ -224,12 +258,38 @@ int main(int argc, char *argv[]) {
 			free(name_cola);			
 			break;
 		//FIN DEL CASE P
+		case 'G': //Lectura de mensaje (no bloqueante)
+        	if ( (leido=read(s_conec, buf, TAM)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+			}//read
+			name_cola = malloc(leido);
+			strcpy(name_cola, buf);
+			cola= get_cola(dic,name_cola);
+			if (cola == NULL){
+				close(s);
+				close(s_conec);
+				free(name_cola);
+				return 1;				
+			}
+			msg = get_msg(cola);	
+			if (msg == NULL){
+				close(s);
+				close(s_conec);
+				free(name_cola);
+				return 1;				
+			}
+			printf("Contenido \n%s\n", msg);
+			send_msg_to_client(s_conec, msg);	
+			free(name_cola);
+			break;
+		//FIN DEL CASE G
 		default:
 			break;
 		}// switch
-
-
-       
 		return_to_client(s_conec, '0');
 		close(s_conec);
 	}
