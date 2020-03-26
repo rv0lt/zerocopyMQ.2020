@@ -170,20 +170,27 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     iov[1].iov_len= sizeof(cola);    
     writev(fd, iov,2);
     }//if !blocking
-
-	if ( (leido=read(fd,tam, sizeof(int))) < 0){
+	if ( (leido=read(fd,&size_msg, sizeof(int))) < 0){
 		perror("error en read");
 		close(fd);
 		return 1;
     }//read
-	printf("____ %d\n", *tam);
-	void *m = (malloc(1024));
-	if ( (leido=read(fd, m, *tam)) < 0){
+    if(size_msg == 0){
+        tam=0;
+        return 0;
+    }
+    else if (size_msg == -1){
+        return -1;
+    }
+    else {    
+    memcpy(tam, &size_msg, leido);
+	*mensaje = malloc(size_msg);
+    if ( (leido=read(fd, *mensaje, size_msg)) < 0){
 		perror("error en read");
 		close(fd);
-		return 1;
+		return -1;
     }//read
-    mensaje = &m;
-    printf("Contenido \n%s\n", *mensaje);
-    return wait_response(fd);
+    return 1;
+    //printf("------Contenido \n%s\n", *mensaje);
+    }
 }

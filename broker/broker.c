@@ -23,27 +23,30 @@ void return_to_client(int fd, char* aux){
 	writev(fd, iov,1);
 }
 
-void send_msg_to_client(int fd, void *msg){
+void send_msg_to_client(int fd, void *msg, bool vacio){
 	struct iovec iov[2];
-	printf("TEST\n");
-	if (msg == NULL){
-		printf("aaaaaaaa");
+	if (vacio){
 		int a =0;
 		iov[0].iov_base= &a;
+		iov[0].iov_len= sizeof(a);		
+		writev(fd, iov,1);
+	
+	}
+	if (msg == NULL){
+		int a =-1;
+		iov[0].iov_base= &a;
 		iov[0].iov_len= sizeof(a);
-		iov[1].iov_base= NULL;
-		iov[1].iov_len= sizeof(NULL);
+		writev(fd, iov,1);
+
 	}
 	else{
 		int a = strlen(msg);
-		printf("---%d\n", a);
-
 		iov[0].iov_base=&a;
 		iov[0].iov_len=sizeof(a);
 		iov[1].iov_base=msg;
 		iov[1].iov_len=a;
+		writev(fd, iov,2);
 	}
-	writev(fd, iov,2);
 }
 /*---------------------------------------------------*/
 void free_cola(char *c, void *v){
@@ -270,21 +273,22 @@ int main(int argc, char *argv[]) {
 			strcpy(name_cola, buf);
 			cola= get_cola(dic,name_cola);
 			if (cola == NULL){
-				close(s);
-				close(s_conec);
+				send_msg_to_client(s_conec,NULL, false);
 				free(name_cola);
-				return 1;				
+				close(s_conec);
+				continue;
 			}
 			msg = get_msg(cola);	
 			if (msg == NULL){
-				close(s);
-				close(s_conec);
+				send_msg_to_client(s_conec,NULL, true);
 				free(name_cola);
-				return 1;				
+				close(s_conec);
+
+				continue;
 			}
-			printf("Contenido \n%s\n", msg);
-			send_msg_to_client(s_conec, msg);	
-			free(name_cola);
+			//printf("Contenido \n%s\n", msg);
+			send_msg_to_client(s_conec, msg, false);	
+			//free(name_cola);
 			break;
 		//FIN DEL CASE G
 		default:

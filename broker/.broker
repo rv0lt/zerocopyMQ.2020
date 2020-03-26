@@ -1,61 +1,455 @@
 execve("./broker", ["./broker", "12345"], [/* 51 vars */]) = 0
-brk(NULL)                               = 0x561f2adc7000
+brk(NULL)                               = 0x555e6ad03000
 access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
 access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
 open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
 fstat(3, {st_mode=S_IFREG|0644, st_size=147204, ...}) = 0
-mmap(NULL, 147204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fe36385b000
+mmap(NULL, 147204, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fc6e6d75000
 close(3)                                = 0
 access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
 open("/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\4\2\0\0\0\0\0"..., 832) = 832
 fstat(3, {st_mode=S_IFREG|0755, st_size=1689360, ...}) = 0
-mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe363859000
-mmap(NULL, 3795296, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fe3632bd000
-mprotect(0x7fe363452000, 2097152, PROT_NONE) = 0
-mmap(0x7fe363652000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x195000) = 0x7fe363652000
-mmap(0x7fe363658000, 14688, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fe363658000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fc6e6d73000
+mmap(NULL, 3795296, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fc6e67d7000
+mprotect(0x7fc6e696c000, 2097152, PROT_NONE) = 0
+mmap(0x7fc6e6b6c000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x195000) = 0x7fc6e6b6c000
+mmap(0x7fc6e6b72000, 14688, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fc6e6b72000
 close(3)                                = 0
-arch_prctl(ARCH_SET_FS, 0x7fe36385a440) = 0
-mprotect(0x7fe363652000, 16384, PROT_READ) = 0
-mprotect(0x561f294b3000, 4096, PROT_READ) = 0
-mprotect(0x7fe36387f000, 4096, PROT_READ) = 0
-munmap(0x7fe36385b000, 147204)          = 0
+arch_prctl(ARCH_SET_FS, 0x7fc6e6d74440) = 0
+mprotect(0x7fc6e6b6c000, 16384, PROT_READ) = 0
+mprotect(0x555e6ab82000, 4096, PROT_READ) = 0
+mprotect(0x7fc6e6d99000, 4096, PROT_READ) = 0
+munmap(0x7fc6e6d75000, 147204)          = 0
 socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) = 3
 setsockopt(3, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0
 bind(3, {sa_family=AF_INET, sin_port=htons(12345), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
 listen(3, 5)                            = 0
-brk(NULL)                               = 0x561f2adc7000
-brk(0x561f2ade8000)                     = 0x561f2ade8000
-accept(3, {sa_family=AF_INET, sin_port=htons(36028), sin_addr=inet_addr("127.0.0.1")}, [16]) = 6
+brk(NULL)                               = 0x555e6ad03000
+brk(0x555e6ad24000)                     = 0x555e6ad24000
+accept(3, {sa_family=AF_INET, sin_port=htons(38894), sin_addr=inet_addr("127.0.0.1")}, [16]) = 6
+read(6, "C\0\0\0\0\0\0\0", 8)           = 8
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 3), ...}) = 0
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(6, "12\0\0\0\0\0\0", 65536)        = 8
+write(1, "--------------\n", 15)        = 15
+write(1, "CONTENIDO DEL DICCIONARIO \n", 27) = 27
+write(1, "Nombre de la cola: 12 \n", 23) = 23
+write(1, "--------------\n", 15)        = 15
+writev(6, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(6)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(38896), sin_addr=inet_addr("127.0.0.1")}, [16]) = 6
 read(6, "P\0\0\0\0\0\0\0", 8)           = 8
-fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 0), ...}) = 0
 write(1, "Se ha seleccionado la operacion:"..., 36) = 36
 read(6, "\10\0\0\0", 4)                 = 4
-read(6, "12\0\0\0\0\0\0", 8)            = 8
-write(1, "He seleccionado la cola 12 \n", 28) = 28
-read(6, "\25\0\0\0", 4)                 = 4
-read(6, "123456789\n987654321\n\n", 21) = 21
-write(1, "Contenido \n", 11)            = 11
-write(1, "123456789\n987654321\n\n", 21) = 21
-write(1, "\n", 1)                       = 1
-writev(6, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
-close(3)                                = 0
+read(6, "12\0\221\211\177\0\0", 8)      = 8
+read(6, "\27\0\0\0", 4)                 = 4
+read(6, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(6, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
 close(6)                                = 0
-write(2, "la cola especificada no es v\303\241li"..., 35la cola especificada no es válida
-) = 35
-write(1, "Contenido de la cola\n", 21)  = 21
-write(1, "_______________\n", 16)       = 16
-write(1, "CONTENIDO DE LA COLA, MENSAJE N\302"..., 36) = 36
-write(2, "la cola especificada no es v\303\241li"..., 35la cola especificada no es válida
-) = 35
-write(1, "_______________\n", 16)       = 16
-writev(6, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = -1 EBADF (Bad file descriptor)
-close(6)                                = -1 EBADF (Bad file descriptor)
-accept(3, 0x7ffe9c262530, [16])         = -1 EBADF (Bad file descriptor)
-write(2, "error en accept: Bad file descri"..., 37error en accept: Bad file descriptor
+accept(3, {sa_family=AF_INET, sin_port=htons(38898), sin_addr=inet_addr("127.0.0.1")}, [16]) = 6
+read(6, "G\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(6, "12\0\221\211\177\0\0", 65536)  = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(6, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(6, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(6)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(38932), sin_addr=inet_addr("127.0.0.1")}, [16]) = 6
+read(6, "C\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(6, "12\0\0\0\0\0\0", 65536)        = 8
+dup(2)                                  = 7
+fcntl(7, F_GETFL)                       = 0x8001 (flags O_WRONLY|O_LARGEFILE)
+close(7)                                = 0
+write(2, "Nombre de cola ya existente: Suc"..., 37Nombre de cola ya existente: Success
 ) = 37
-writev(-1, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = -1 EBADF (Bad file descriptor)
-close(3)                                = -1 EBADF (Bad file descriptor)
-exit_group(1)                           = ?
-+++ exited with 1 +++
+writev(6, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(38934), sin_addr=inet_addr("127.0.0.1")}, [16]) = 7
+read(7, "P\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(7, "\10\0\0\0", 4)                 = 4
+read(7, "12\0'>\177\0\0", 8)            = 8
+read(7, "\27\0\0\0", 4)                 = 4
+read(7, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(7, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(7)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(38936), sin_addr=inet_addr("127.0.0.1")}, [16]) = 7
+read(7, "G\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(7, "12\0'>\177\0\0", 65536)        = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(7, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(7, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(7)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39084), sin_addr=inet_addr("127.0.0.1")}, [16]) = 7
+read(7, "C\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(7, "12\0\0\0\0\0\0", 65536)        = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(7, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39086), sin_addr=inet_addr("127.0.0.1")}, [16]) = 8
+read(8, "P\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(8, "\10\0\0\0", 4)                 = 4
+read(8, "12\0005\t\177\0\0", 8)         = 8
+read(8, "\27\0\0\0", 4)                 = 4
+read(8, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(8, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(8)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39088), sin_addr=inet_addr("127.0.0.1")}, [16]) = 8
+read(8, "G\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(8, "12\0005\t\177\0\0", 65536)     = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(8, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(8, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(8)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39116), sin_addr=inet_addr("127.0.0.1")}, [16]) = 8
+read(8, "C\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(8, "12\0\0\0\0\0\0", 65536)        = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(8, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39120), sin_addr=inet_addr("127.0.0.1")}, [16]) = 9
+read(9, "P\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(9, "\10\0\0\0", 4)                 = 4
+read(9, "12\0\215\252\177\0\0", 8)      = 8
+read(9, "\27\0\0\0", 4)                 = 4
+read(9, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(9, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(9)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39122), sin_addr=inet_addr("127.0.0.1")}, [16]) = 9
+read(9, "G\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(9, "12\0\215\252\177\0\0", 65536)  = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(9, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(9, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(9)                                = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39148), sin_addr=inet_addr("127.0.0.1")}, [16]) = 9
+read(9, "C\0\0\0\0\0\0\0", 8)           = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(9, "12\0\0\0\0\0\0", 65536)        = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(9, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39150), sin_addr=inet_addr("127.0.0.1")}, [16]) = 10
+read(10, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(10, "\10\0\0\0", 4)                = 4
+read(10, "12\0N\351\177\0\0", 8)        = 8
+read(10, "\27\0\0\0", 4)                = 4
+read(10, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(10, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(10)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39152), sin_addr=inet_addr("127.0.0.1")}, [16]) = 10
+read(10, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(10, "12\0N\351\177\0\0", 65536)    = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(10, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(10, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(10)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39368), sin_addr=inet_addr("127.0.0.1")}, [16]) = 10
+read(10, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(10, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(10, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39372), sin_addr=inet_addr("127.0.0.1")}, [16]) = 11
+read(11, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(11, "\10\0\0\0", 4)                = 4
+read(11, "12\0\313\346\177\0\0", 8)     = 8
+read(11, "\27\0\0\0", 4)                = 4
+read(11, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(11, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(11)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39374), sin_addr=inet_addr("127.0.0.1")}, [16]) = 11
+read(11, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(11, "12\0\313\346\177\0\0", 65536) = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(11, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(11, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(11)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39408), sin_addr=inet_addr("127.0.0.1")}, [16]) = 11
+read(11, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(11, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(11, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39410), sin_addr=inet_addr("127.0.0.1")}, [16]) = 20
+read(20, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(20, "\10\0\0\0", 4)                = 4
+read(20, "12\0\202\232\177\0\0", 8)     = 8
+read(20, "\27\0\0\0", 4)                = 4
+read(20, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(20, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(20)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39412), sin_addr=inet_addr("127.0.0.1")}, [16]) = 20
+read(20, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(20, "12\0\202\232\177\0\0", 65536) = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(20, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(20, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(20)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39440), sin_addr=inet_addr("127.0.0.1")}, [16]) = 20
+read(20, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(20, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(20, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39448), sin_addr=inet_addr("127.0.0.1")}, [16]) = 21
+read(21, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(21, "\10\0\0\0", 4)                = 4
+read(21, "12\0/\355\177\0\0", 8)        = 8
+read(21, "\27\0\0\0", 4)                = 4
+read(21, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(21, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(21)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39450), sin_addr=inet_addr("127.0.0.1")}, [16]) = 21
+read(21, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(21, "12\0/\355\177\0\0", 65536)    = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(21, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(21, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(21)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39472), sin_addr=inet_addr("127.0.0.1")}, [16]) = 21
+read(21, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(21, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(21, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39476), sin_addr=inet_addr("127.0.0.1")}, [16]) = 22
+read(22, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(22, "\10\0\0\0", 4)                = 4
+read(22, "12\0\353e\177\0\0", 8)        = 8
+read(22, "\27\0\0\0", 4)                = 4
+read(22, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(22, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(22)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39478), sin_addr=inet_addr("127.0.0.1")}, [16]) = 22
+read(22, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(22, "12\0\353e\177\0\0", 65536)    = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(22, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(22, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(22)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39546), sin_addr=inet_addr("127.0.0.1")}, [16]) = 22
+read(22, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(22, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(22, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39552), sin_addr=inet_addr("127.0.0.1")}, [16]) = 23
+read(23, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(23, "\10\0\0\0", 4)                = 4
+read(23, "12\0c\333\177\0\0", 8)        = 8
+read(23, "\27\0\0\0", 4)                = 4
+read(23, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(23, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(23)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39556), sin_addr=inet_addr("127.0.0.1")}, [16]) = 23
+read(23, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(23, "12\0c\333\177\0\0", 65536)    = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(23, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(23, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(23)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39630), sin_addr=inet_addr("127.0.0.1")}, [16]) = 23
+read(23, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(23, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(23, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39632), sin_addr=inet_addr("127.0.0.1")}, [16]) = 24
+read(24, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(24, "\10\0\0\0", 4)                = 4
+read(24, "12\0\230y\177\0\0", 8)        = 8
+read(24, "\27\0\0\0", 4)                = 4
+read(24, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(24, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(24)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39636), sin_addr=inet_addr("127.0.0.1")}, [16]) = 24
+read(24, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(24, "12\0\230y\177\0\0", 65536)    = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(24, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(24, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(24)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39652), sin_addr=inet_addr("127.0.0.1")}, [16]) = 24
+read(24, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(24, "12\0\0\0\0\0\0", 65536)       = 8
+write(2, "Nombre de cola ya existente: Inv"..., 46Nombre de cola ya existente: Invalid argument
+) = 46
+writev(24, [{iov_base="1-\0\0\0\0\0\0", iov_len=8}], 1) = 8
+accept(3, {sa_family=AF_INET, sin_port=htons(39656), sin_addr=inet_addr("127.0.0.1")}, [16]) = 25
+read(25, "C\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(25, "23\0\254\246\177\0\0", 65536) = 8
+write(1, "--------------\n", 15)        = 15
+write(1, "CONTENIDO DEL DICCIONARIO \n", 27) = 27
+write(1, "Nombre de la cola: 12 \n", 23) = 23
+write(1, "Nombre de la cola: 23 \n", 23) = 23
+write(1, "--------------\n", 15)        = 15
+writev(25, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(25)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39660), sin_addr=inet_addr("127.0.0.1")}, [16]) = 25
+read(25, "P\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(25, "\10\0\0\0", 4)                = 4
+read(25, "12\0\254\246\177\0\0", 8)     = 8
+read(25, "\27\0\0\0", 4)                = 4
+read(25, "123456789\n987654321\nc\nd", 23) = 23
+write(1, "_______________\n", 16)       = 16
+write(1, "CONTENIDO DE LA COLA\n", 21)  = 21
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "_______________\n", 16)       = 16
+writev(25, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(25)                               = 0
+accept(3, {sa_family=AF_INET, sin_port=htons(39662), sin_addr=inet_addr("127.0.0.1")}, [16]) = 25
+read(25, "G\0\0\0\0\0\0\0", 8)          = 8
+write(1, "Se ha seleccionado la operacion:"..., 36) = 36
+read(25, "12\0\254\246\177\0\0", 65536) = 8
+write(1, "Contenido \n", 11)            = 11
+write(1, "123456789\n987654321\nc\n", 22) = 22
+write(1, "d\n", 2)                      = 2
+write(1, "TEST\n", 5)                   = 5
+write(1, "---23\n", 6)                  = 6
+writev(25, [{iov_base="\27\0\0\0", iov_len=4}, {iov_base="123456789\n987654321\nc\nd", iov_len=23}], 2) = 27
+writev(25, [{iov_base="0\0\0\0\0\0\0\0", iov_len=8}], 1) = 8
+close(25)                               = 0
+accept(3, 0x7ffe14c9b2c0, [16])         = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
+accept(3, 0x7ffe14c9b2c0, [16])         = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
+accept(3, 0x7ffe14c9b2c0, [16])         = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
+accept(3, 0x7ffe14c9b2c0, [16])         = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
+accept(3, 0x7ffe14c9b2c0, [16])         = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGWINCH {si_signo=SIGWINCH, si_code=SI_KERNEL} ---
+accept(3, strace: Process 25682 detached
+ <detached ...>
