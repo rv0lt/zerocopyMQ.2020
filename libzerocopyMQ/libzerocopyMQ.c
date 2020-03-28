@@ -74,9 +74,9 @@ int send_request(const unsigned int op, const char *cola, const void *mensaje, s
 /*----------------------------------------------------------------------------*/
 int createMQ(const char *cola){
     int fd;
-    struct iovec iov[2];    
+    struct iovec iov[3];    
     pchar = 'C';
-
+    int a= strlen(cola);
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
@@ -84,15 +84,16 @@ int createMQ(const char *cola){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
+    printf("..%d", strlen(cola));
+    printf("..%d", sizeof(cola));
+    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
-
-
-    iov[1].iov_base= cola;
-    iov[1].iov_len= sizeof(cola);  
-    writev(fd, iov,2);
-    /*--------------------------------*/
-
+    iov[1].iov_base= &a;
+    iov[1].iov_len= sizeof(a);
+    iov[2].iov_base= cola;
+    iov[2].iov_len= strlen(cola); 
+    writev(fd, iov,3);
     return wait_response(fd);
 }
 
@@ -100,9 +101,9 @@ int createMQ(const char *cola){
 
 int destroyMQ(const char *cola){
     int fd;
-    struct iovec iov[2];
+    struct iovec iov[3];
     pchar = 'D';
-
+    int a= strlen(cola);
     if (sizeof(cola) > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
@@ -111,14 +112,14 @@ int destroyMQ(const char *cola){
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-
     
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
-
-    iov[1].iov_base= cola;
-    iov[1].iov_len= sizeof(cola);  
-    writev(fd, iov,2);
+    iov[1].iov_base= &a;
+    iov[1].iov_len= sizeof(a);
+    iov[2].iov_base= cola;
+    iov[2].iov_len= strlen(cola);  
+    writev(fd, iov,3);
 
     return wait_response(fd);
 }
@@ -126,7 +127,7 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     int fd;
     struct iovec iov[5];
     pchar = 'P';
-    int a= sizeof(cola);;
+    int a= strlen(cola);
     if (tam > TAM_MAX_MESSAGE){
         perror("Tamaño del mensaje demasiado grande");
         return -1;
@@ -140,7 +141,7 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
-    iov[2].iov_len= sizeof(cola); 
+    iov[2].iov_len= strlen(cola); 
     iov[3].iov_base= &tam;
     iov[3].iov_len= sizeof(tam);
     iov[4].iov_base= mensaje;
@@ -152,8 +153,9 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     int fd;
-    struct iovec iov[2];
+    struct iovec iov[3];
     int size_msg;
+    int a= strlen(cola);
     if (sizeof(cola) > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
@@ -166,9 +168,11 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     pchar = 'G';
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;    
-    iov[1].iov_base= cola;
-    iov[1].iov_len= sizeof(cola);    
-    writev(fd, iov,2);
+    iov[1].iov_base= &a;
+    iov[1].iov_len= sizeof(a);
+    iov[2].iov_base= cola;
+    iov[2].iov_len= strlen(cola);    
+    writev(fd, iov,3);
     }//if !blocking
 	if ( (leido=read(fd,&size_msg, sizeof(int))) < 0){
 		perror("error en read");

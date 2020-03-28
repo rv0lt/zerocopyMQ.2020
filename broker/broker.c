@@ -170,17 +170,23 @@ int main(int argc, char *argv[]) {
 
 		switch (buf[0]){
 		case 'C': //Crear una nueva cola
-        	if ( (leido=read(s_conec, buf, TAM)) < 0){
+			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He creado la cola %s \n", buf);			
-
-			char * aux = malloc(leido);
-			strcpy(aux,buf);
+			//printf("---%d\n", size_cola);
+			name_cola = malloc(size_cola);
+			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("He creado la cola %s \n", name_cola);
 			cola = cola_create();
 			if (cola == NULL){
 				perror("Error al crear la estructura cola");
@@ -189,7 +195,7 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
 			}//if
-			if (dic_put(dic, aux, cola) <0){
+			if (dic_put(dic, name_cola, cola) <0){
 				perror("Nombre de cola ya existente");
 				return_to_client(s_conec,'-1');
 				continue;
@@ -198,21 +204,31 @@ int main(int argc, char *argv[]) {
 			break;
 		//FIN DEL CASE C
 		case 'D': //Destruir una cola (y sus mensajes)
-        	if ( (leido=read(s_conec, buf, TAM)) < 0){
+			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read
-			if (dic_remove_entry(dic, buf, free_cola) < 0){
+			//printf("---%d\n", size_cola);
+			name_cola = malloc(size_cola);
+			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("He destruido la cola %s \n", name_cola);
+			if (dic_remove_entry(dic, name_cola, free_cola) < 0){
 				perror("No existe ese nombre de cola \n");
 				return_to_client(s_conec, '-1');
 				continue;
 			}
 			see_dic(dic);
 			break;
-		//FIN DEL CASE D
+		//FIN DEL CASE D	
 		case 'P': //Poner un nuevo mensaje a una cola determinada
 			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
@@ -262,15 +278,23 @@ int main(int argc, char *argv[]) {
 			break;
 		//FIN DEL CASE P
 		case 'G': //Lectura de mensaje (no bloqueante)
-        	if ( (leido=read(s_conec, buf, TAM)) < 0){
+			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
 				close(s);
 				close(s_conec);
 				return 1;
-			}//read
-			name_cola = malloc(leido);
-			strcpy(name_cola, buf);
+        	}//read
+			//printf("---%d\n", size_cola);
+			name_cola = malloc(size_cola);
+			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("He seleccionado la cola %s  para leer \n", name_cola);	
 			cola= get_cola(dic,name_cola);
 			if (cola == NULL){
 				send_msg_to_client(s_conec,NULL, false);
