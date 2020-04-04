@@ -93,7 +93,7 @@ char *get_msg (struct cola *c){
 	int error;
 	aux= cola_pop_front(c,&error);
 	if (error < 0){
-		perror("Cola vacía");
+		//perror("Cola vacía");
 		return NULL;
 	}
 	else
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 				close(s);
 				close(s_conec);
 				return 1;
-        	}//read
+        	}//read  
 			//printf("---%d\n", size_cola);
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
@@ -315,7 +315,39 @@ int main(int argc, char *argv[]) {
 			//free(name_cola);
 			break;
 		//FIN DEL CASE G
-		default:
+		default: // Lectura bloqueante de mensaje
+			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("---%d\n", size_cola);
+			name_cola = malloc(size_cola);
+			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
+				perror("error en read");
+				return_to_client(s_conec,'-1');
+				close(s);
+				close(s_conec);
+				return 1;
+        	}//read
+			//printf("He seleccionado la cola %s  para leer \n", name_cola);	
+			cola= get_cola(dic,name_cola);
+			if (cola == NULL){
+				send_msg_to_client(s_conec,NULL, false);
+				free(name_cola);
+				close(s_conec);
+				continue;
+			}
+			msg = get_msg(cola);
+			if (msg == NULL){
+				printf("No hay mensajes, me quedo bloqueado hasta tener uno\n");
+				do{
+					msg = get_msg(cola);
+				} while (msg == NULL);
+			}
+			send_msg_to_client(s_conec, msg, false);			
 			break;
 		}// switch
 		return_to_client(s_conec, '0');
