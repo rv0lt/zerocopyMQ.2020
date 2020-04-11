@@ -14,9 +14,3 @@
 #define TAM  65536 //2¹⁶
 #define TAM_MAX_MESSAGE pow(2,32) //2³² 
 
-struct put_struct
-{
-    const void *put_mensaje;
-    size_t put_mes_len;
-
-};

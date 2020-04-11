@@ -18,6 +18,7 @@ export BROKER_PORT=12345
 char *pchar;
 char buf[TAM];
 int leido;
+int DEBUG = 1; 
 /*-----------------------------------------------*/
 int connect_socket(){
 
@@ -62,19 +63,7 @@ int wait_response(int fd){
         return 0;
 }
 /*----------------------------------------------------------------------------*/
-int send_request(const unsigned int op, const char *cola, const void *mensaje, size_t tam, 
-                    void **mensaje_2, size_t *tam_2, bool blocking) {
-    int fd;
-    char *s =0;
-    if ((fd = connect_socket(&fd))< 0 ){
-        return -1;
-    }
-    
-    }
-/*----------------------------------------------------------------------------*/
 int createMQ(const char *cola){
-    printf("%s\n", cola);
-
     int fd;
     struct iovec iov[3];    
     pchar = 'C';
@@ -86,19 +75,16 @@ int createMQ(const char *cola){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
-    printf("..%d", strlen(cola));
-    printf("..%d", sizeof(cola));
+
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
-    iov[2].iov_len= strlen(cola)+1; 
+    iov[2].iov_len= a; 
     writev(fd, iov,3);
     return wait_response(fd);
 }
-
-
 
 int destroyMQ(const char *cola){
     int fd;
@@ -119,7 +105,7 @@ int destroyMQ(const char *cola){
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
-    iov[2].iov_len= strlen(cola)+1;  
+    iov[2].iov_len= a;  
     writev(fd, iov,3);
 
     return wait_response(fd);
@@ -136,20 +122,20 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar);
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
-    iov[2].iov_len= strlen(cola)+1; 
+    iov[2].iov_len= a; 
     iov[3].iov_base= &tam;
     iov[3].iov_len= sizeof(tam);
     iov[4].iov_base= mensaje;
     iov[4].iov_len= tam;
-
+    if (DEBUG){
+        printf ("Tamaño del mensaje que estoy guardando: %d \nContenido del mensaje: \n%s \n", tam, mensaje);
+    }
     writev(fd, iov,5);
-
     return wait_response(fd);
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
@@ -176,7 +162,7 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     iov[1].iov_base= &a;
     iov[1].iov_len= sizeof(a);
     iov[2].iov_base= cola;
-    iov[2].iov_len= strlen(cola)+1;    
+    iov[2].iov_len= a;    
     writev(fd, iov,3);
     
 	if ( (leido=read(fd,&size_msg, sizeof(int))) < 0){
@@ -184,22 +170,25 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
 		close(fd);
 		return 1;
     }//read
-    if(size_msg == 0){
-        tam=0;
-        return 0;
-    }
-    else if (size_msg == -1){
-        return -1;
-    }
-    else {    
     memcpy(tam, &size_msg, leido);
+
+    if(size_msg == 0)
+        return 0;
+    
+    else if (size_msg == -1)
+        return -1;
+    
+    else {    
+
 	*mensaje = malloc(size_msg);
     if ( (leido=read(fd, *mensaje, size_msg)) < 0){
 		perror("error en read");
 		close(fd);
 		return -1;
     }//read
+    if (DEBUG){
+        printf ("Tamaño del mensaje que estoy leeyendo: %d \nContenido del mensaje: \n%s \n", size_msg, *mensaje);
+    }
     return 1;
-    //printf("------Contenido \n%s\n", *mensaje);
     }
 }

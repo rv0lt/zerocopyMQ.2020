@@ -8,9 +8,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define TAM  65536 //2¹⁶
 
+int DEBUG = 0; 
+int par = 0;
 /*----------------------------------------------------*/
 void return_to_client(int fd, char* aux){
 	struct iovec iov[1];    
@@ -23,7 +26,7 @@ void return_to_client(int fd, char* aux){
 	writev(fd, iov,1);
 }
 
-void send_msg_to_client(int fd, void *msg, bool vacio){
+void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 	struct iovec iov[2];
 	if (vacio){
 		int a =0;
@@ -40,7 +43,7 @@ void send_msg_to_client(int fd, void *msg, bool vacio){
 
 	}
 	else{
-		int a = strlen(msg);
+		int a = tam;
 		iov[0].iov_base=&a;
 		iov[0].iov_len=sizeof(a);
 		iov[1].iov_base=msg;
@@ -66,12 +69,20 @@ void see_dic (struct diccionario *d){
 	printf("--------------\n");
 }
 void print_cola(void *v){
+	if (!par){
+		uint32_t tam = v;
+		printf("/// Tamaño del msg %d ///\n", tam);
+		par = 1;
+	}else{
 	void * msg = v;
 	printf("%s\n", msg);
+	par=0;
+	}
 }
 void see_cola (struct cola *c){
 	printf("_______________\n");
 	printf("CONTENIDO DE LA COLA\n");
+	par = 0;
 	cola_visit(c, print_cola);
 	printf("_______________\n");
 
@@ -82,7 +93,8 @@ struct cola *get_cola (struct diccionario *d, char* name_cola){
 	int error;
 	aux= dic_get(d,name_cola,&error);
 	if (error < 0){
-		perror("Cola no existente");
+		if (DEBUG)
+			perror("Cola no existente");
 		return NULL;
 	}
 	else
@@ -93,7 +105,8 @@ char *get_msg (struct cola *c){
 	int error;
 	aux= cola_pop_front(c,&error);
 	if (error < 0){
-		//perror("Cola vacía");
+		if(DEBUG)
+			perror("Cola vacía");
 		return NULL;
 	}
 	else
@@ -106,13 +119,14 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in dir, dir_cliente;
 	char buf[TAM];
 	int size_cola;
-	int size_msg;
+	uint32_t size_msg_;
 	char *pchar;
 	struct cola *cola;
 	int opcion=1;
 	struct diccionario *dic;
 	void *msg;
 	char *name_cola;
+
 	if (argc!=2) {
 		fprintf(stderr, "Uso: %s puerto\n", argv[0]);
 		return 1;
@@ -166,7 +180,8 @@ int main(int argc, char *argv[]) {
 			return 1;
         }//read de la operacion
 
-		printf("Se ha seleccionado la operacion: %c \n", buf[0]);		
+		if (DEBUG)
+			printf("Se ha seleccionado la operacion: %c \n", buf[0]);		
 
 		switch (buf[0]){
 		case 'C': //Crear una nueva cola
@@ -177,7 +192,7 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read  
-			//printf("---%d\n", size_cola);
+
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
@@ -186,7 +201,8 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He creado la cola %s \n", name_cola);
+			if (DEBUG)
+				printf("He creado la cola %s de tamano %d \n", name_cola, size_cola-1);
 			cola = cola_create();
 			if (cola == NULL){
 				perror("Error al crear la estructura cola");
@@ -196,11 +212,13 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}//if
 			if (dic_put(dic, name_cola, cola) <0){
-				perror("Nombre de cola ya existente");
+				if (DEBUG)
+					perror("Nombre de cola ya existente \n");
 				return_to_client(s_conec,'-1');
 				continue;
 			}//if
-			see_dic(dic);
+			if (DEBUG)
+				see_dic(dic);
 			break;
 		//FIN DEL CASE C
 		case 'D': //Destruir una cola (y sus mensajes)
@@ -211,7 +229,6 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("---%d\n", size_cola);
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
@@ -220,13 +237,16 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He destruido la cola %s \n", name_cola);
+			if(DEBUG)
+				printf("He destruido la cola %s de tamaño %d \n", name_cola, size_cola-1);
 			if (dic_remove_entry(dic, name_cola, free_cola) < 0){
-				perror("No existe ese nombre de cola \n");
+				if (DEBUG)
+					perror("No existe ese nombre de cola \n");
 				return_to_client(s_conec, '-1');
 				continue;
 			}
-			see_dic(dic);
+			if (DEBUG)
+				see_dic(dic);
 			break;
 		//FIN DEL CASE D	
 		case 'P': //Poner un nuevo mensaje a una cola determinada
@@ -237,7 +257,6 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("---%d\n", size_cola);
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
@@ -246,34 +265,37 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He seleccionado la cola %s \n", name_cola);			
-			if ( (leido=read(s_conec,&size_msg , sizeof(int))) < 0){
+			if ( (leido=read(s_conec,&size_msg_ , sizeof(uint32_t))) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("____ %d\n", size_msg);
-			msg = malloc(size_msg);
-			if ( (leido=read(s_conec, msg, size_msg)) < 0){
+			if (DEBUG){
+				printf("He seleccionado la cola %s \n", name_cola);			
+				printf("Tamaño del mensaje a introducir %d\n", size_msg_);
+			}
+			msg = malloc(size_msg_);
+			if ( (leido=read(s_conec, msg, size_msg_)) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
 				close(s);
 				close(s_conec);
 				return 1;
-        	}//read			
-			//printf("Contenido \n%s\n", msg);			
-			
+        	}//read						
 			cola= get_cola(dic,name_cola);
 			if (cola == NULL){
 				return_to_client(s_conec,'-1');
 				free(name_cola);
 				continue;				
 			}
+			cola_push_back(cola, size_msg_);
 			cola_push_back(cola, msg);
-			//printf("Contenido de la cola\n");
-			see_cola(cola);
+			if (DEBUG){
+				printf("Contenido de la cola\n");
+				see_cola(cola);
+			}
 			free(name_cola);			
 			break;
 		//FIN DEL CASE P
@@ -285,7 +307,6 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("---%d\n", size_cola);
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
@@ -294,28 +315,40 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He seleccionado la cola %s  para leer \n", name_cola);	
+			if (DEBUG)
+				printf("He seleccionado la cola %s  para leer \n", name_cola);	
 			cola= get_cola(dic,name_cola);
 			if (cola == NULL){
-				send_msg_to_client(s_conec,NULL, false);
+				send_msg_to_client(s_conec,NULL, 0, false);
 				free(name_cola);
 				close(s_conec);
 				continue;
 			}
-			msg = get_msg(cola);	
-			if (msg == NULL){
-				send_msg_to_client(s_conec,NULL, true);
+			size_msg_ = get_msg(cola);
+			if (size_msg_ == NULL){
+				send_msg_to_client(s_conec,NULL, 0, true);
 				free(name_cola);
 				close(s_conec);
 
 				continue;
 			}
-			//printf("Contenido \n%s\n", msg);
-			send_msg_to_client(s_conec, msg, false);	
+			msg = get_msg(cola);	
+			if (msg == NULL){
+				send_msg_to_client(s_conec,NULL, 0, true);
+				free(name_cola);
+				close(s_conec);
+
+				continue;
+			}
+			if (DEBUG){
+				printf("Tamaño del mensaje a leer %d\n", size_msg_);
+			}
+			send_msg_to_client(s_conec, msg, size_msg_, false);	
 			//free(name_cola);
 			break;
 		//FIN DEL CASE G
 		default: // Lectura bloqueante de mensaje
+			//INCOMPLETO
 			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
 				return_to_client(s_conec,'-1');
@@ -323,7 +356,6 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("---%d\n", size_cola);
 			name_cola = malloc(size_cola);
 			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
 				perror("error en read");
@@ -332,10 +364,11 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			//printf("He seleccionado la cola %s  para leer \n", name_cola);	
+			if (DEBUG)
+				printf("He seleccionado la cola %s  para leer \n", name_cola);	
 			cola= get_cola(dic,name_cola);
 			if (cola == NULL){
-				send_msg_to_client(s_conec,NULL, false);
+				send_msg_to_client(s_conec,NULL, 0, false);
 				free(name_cola);
 				close(s_conec);
 				continue;
@@ -347,7 +380,7 @@ int main(int argc, char *argv[]) {
 					msg = get_msg(cola);
 				} while (msg == NULL);
 			}
-			send_msg_to_client(s_conec, msg, false);			
+			send_msg_to_client(s_conec, msg, 0, false);			
 			break;
 		}// switch
 		return_to_client(s_conec, '0');
