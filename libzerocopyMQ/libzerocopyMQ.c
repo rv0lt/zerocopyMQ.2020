@@ -18,7 +18,7 @@ export BROKER_PORT=12345
 char *pchar;
 char buf[TAM];
 int leido;
-int DEBUG = 1; 
+bool DEBUG = true; 
 /*-----------------------------------------------*/
 int connect_socket(){
 
@@ -57,6 +57,7 @@ int wait_response(int fd){
 		close(fd);
 		return -1;
     }
+    close(fd);
     if (buf[0]!= '0')
         return -1;
     else 
@@ -71,7 +72,8 @@ int createMQ(const char *cola){
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-    if (sizeof(cola) > TAM){
+    printf("%d\n",strlen(cola));
+    if (strlen(cola) > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
@@ -133,7 +135,8 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     iov[4].iov_base= mensaje;
     iov[4].iov_len= tam;
     if (DEBUG){
-        printf ("Tamaño del mensaje que estoy guardando: %d \nContenido del mensaje: \n%s \n", tam, mensaje);
+        printf ("Tamaño del mensaje que estoy guardando: %d \n", tam);
+       // print("Contenido del mensaje: \n%s \n", mensaje);
     }
     writev(fd, iov,5);
     return wait_response(fd);
@@ -151,12 +154,11 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
         return -1;
     }
 
-    if(!blocking){
-    pchar = 'G';
-    }//if !blocking
-    else{
-    pchar = 'B';
-    }
+    if(!blocking)
+        pchar = 'G';
+    else
+        pchar = 'B';
+    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;    
     iov[1].iov_base= &a;
@@ -165,30 +167,39 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     iov[2].iov_len= a;    
     writev(fd, iov,3);
     
-	if ( (leido=read(fd,&size_msg, sizeof(int))) < 0){
+	if ( (leido=read(fd,tam, sizeof(uint32_t))) < 0){
 		perror("error en read");
 		close(fd);
 		return 1;
     }//read
-    memcpy(tam, &size_msg, leido);
+	//printf("_-_-_-%d\n", size_msg);
+	printf("_-_-_-%d\n", leido);
 
-    if(size_msg == 0)
+    //memcpy(tam, &size_msg, leido);
+    printf("_-_-_-%d\n", *tam);
+
+    if(*tam == 0){
+        if (!blocking)
+            return 0;
+        else{
+        //La cola estaba vacia y la operacion era el get bloqueante
+        //TODO dejar bloqueado al proceso y esperar a que le llegue un mensaje
+        
+        printf("No implementado aun\n");
         return 0;
-    
-    else if (size_msg == -1)
+        }
+    }
+    else if (*tam == -1)
         return -1;
-    
     else {    
-
-	*mensaje = malloc(size_msg);
-    if ( (leido=read(fd, *mensaje, size_msg)) < 0){
+	*mensaje = malloc(*tam);
+    if ( (leido=read(fd, *mensaje, *tam)) < 0){
 		perror("error en read");
 		close(fd);
 		return -1;
     }//read
-    if (DEBUG){
-        printf ("Tamaño del mensaje que estoy leeyendo: %d \nContenido del mensaje: \n%s \n", size_msg, *mensaje);
-    }
-    return 1;
+    if (DEBUG)
+        printf ("Tamaño del mensaje que estoy leeyendo: %d \n", *tam);
+       // print("Contenido del mensaje: \n%s \n", mensaje);    return 1;
     }
 }
