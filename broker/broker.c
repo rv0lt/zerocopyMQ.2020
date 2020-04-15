@@ -12,7 +12,7 @@
 
 #define TAM  65536 //2¹⁶
 
-bool DEBUG = true; 
+bool DEBUG = false; 
 int par = 0;
 /*----------------------------------------------------*/
 void return_to_client(int fd, char* aux){
@@ -29,7 +29,6 @@ void return_to_client(int fd, char* aux){
 void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 	struct iovec iov[2];
 	if (vacio){
-		//printf("1111111\n");
 		int a =0;
 		iov[0].iov_base= &a;
 		iov[0].iov_len= sizeof(a);		
@@ -37,7 +36,6 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 		//El cliente recibe un size_msg=0 que le indica que la cola está vacia
 	}
 	else if (msg == NULL){
-		//printf("222222\n");
 		int a =-1;
 		iov[0].iov_base= &a;
 		iov[0].iov_len= sizeof(a);
@@ -45,16 +43,41 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 		//El cliente recibe un size_msg=-1 que le indica que no exisitia esa cola 
 	}
 	else{
-		printf("333333\n");
 		int a = tam;
-		printf("_-_-_-%d\n", a);
-		printf("_-_-_-%d\n", tam);
 
 		iov[0].iov_base=&a;
 		iov[0].iov_len=sizeof(a);
+		//writev(fd, iov,1);
+
 		iov[1].iov_base=msg;
 		iov[1].iov_len=a;
-		writev(fd, iov,2);
+    	int desp= sizeof(a) + a;
+
+    	/*
+		do{
+      		desp+= writev(fd, iov,1);
+       		iov[0].iov_base= msg + desp; 
+			iov[0].iov_len = a - desp;
+			if (iov[0].iov_len < 0)
+				iov[0].iov_len=0;
+   		} while (desp != tam);
+		*/
+	    int i=true;
+    	while (desp > 0) {
+        	int bytes_written = writev(fd, iov,2);
+        	if (bytes_written <= 0) {
+            	// handle errors
+        	}
+        	desp -= bytes_written;
+        	if(i){
+            	bytes_written-= sizeof(a);
+            	i = false;
+        	}
+        	iov[1].iov_base += bytes_written;
+        	iov[1].iov_len -= bytes_written;
+        	if (iov[1].iov_len < 0)
+            	iov[1].iov_len=0; 
+    	} //while   		   
 		//El cliente recibe un size_msg>0 y el mensaje correspondiente
 	}
 }
@@ -82,7 +105,7 @@ void print_cola(void *v){
 		par = 1;
 	}else{
 	void * msg = v;
-	//printf("%s\n", msg);
+//	printf("%s\n", msg);
 	par=0;
 	}
 }
@@ -287,20 +310,35 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			
+			/*
 			if (DEBUG){
 				printf("He seleccionado la cola %s \n", name_cola);			
 				printf("Tamaño del mensaje a introducir %d\n", size_msg_);
 			}
-			
+			*/
 			msg = malloc(size_msg_);
-			if ( (leido=read(s_conec, msg, size_msg_)) < 0){
-				perror("error en read");
-				return_to_client(s_conec,'-1');
-				close(s);
-				close(s_conec);
-				return 1;
-        	}//read						
+			struct iovec test[1];
+			test[0].iov_base = msg;
+			test[0].iov_len = size_msg_;
+			ssize_t desp=size_msg_;
+    		/*
+			do{
+    			desp += readv(s_conec, test, 1);;
+       			test[0].iov_base=msg+desp;
+				test[0].iov_len= size_msg_ - desp;
+				if (test[0].iov_len < 0)
+					test[0].iov_len = 0;
+    		} while (desp != size_msg_);
+			*/
+			while (desp>0){
+				int bytes_read = readv(s_conec, test,1);
+				desp -= bytes_read;
+				test[0].iov_base += bytes_read;
+				test[0].iov_len -=bytes_read;
+				if (test[0].iov_len < 0)
+					test[0].iov_len = 0;
+			}//while
+			
 			cola= get_cola(dic_colas,name_cola);
 			if (cola == NULL){
 				return_to_client(s_conec,'-1');
@@ -309,12 +347,12 @@ int main(int argc, char *argv[]) {
 			}
 			cola_push_back(cola, size_msg_);
 			cola_push_back(cola, msg);
-			
+			/*
 			if (DEBUG){
 				printf("Contenido de la cola\n");
 				see_cola(cola);
 			}
-			
+			*/
 			free(name_cola);			
 			break;
 		//FIN DEL CASE P
@@ -335,10 +373,10 @@ int main(int argc, char *argv[]) {
 				close(s_conec);
 				return 1;
         	}//read
-			
+			/*
 			if (DEBUG)
 				printf("He seleccionado la cola %s  para leer \n", name_cola);	
-			
+			*/
 			bool vacio = false;
 			size_msg_=NULL;
 			msg=NULL;
@@ -360,10 +398,11 @@ int main(int argc, char *argv[]) {
 					vacio=true;	
 					//La cola esta vacia
 			}
+			/*
 			if (DEBUG){
 				printf("Tamaño del mensaje a leer %d\n", size_msg_);
 			}
-
+*/
 			send_msg_to_client(s_conec, msg, size_msg_, vacio);
 			
 			free(name_cola);	
