@@ -43,7 +43,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 		//El cliente recibe un size_msg=-1 que le indica que no exisitia esa cola 
 	}
 	else{
-		int a = tam;
+		uint32_t a = tam;
 
 		iov[0].iov_base=&a;
 		iov[0].iov_len=sizeof(a);
@@ -51,7 +51,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 
 		iov[1].iov_base=msg;
 		iov[1].iov_len=a;
-    	int desp= sizeof(a) + a;
+    	uint64_t desp= sizeof(a) + a;
 
     	/*
 		do{
@@ -64,7 +64,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 		*/
 	    int i=true;
     	while (desp > 0) {
-        	int bytes_written = writev(fd, iov,2);
+        	ssize_t bytes_written = writev(fd, iov,2);
         	if (bytes_written <= 0) {
             	// handle errors
         	}
@@ -320,25 +320,19 @@ int main(int argc, char *argv[]) {
 			struct iovec test[1];
 			test[0].iov_base = msg;
 			test[0].iov_len = size_msg_;
-			ssize_t desp=size_msg_;
-    		/*
-			do{
-    			desp += readv(s_conec, test, 1);;
-       			test[0].iov_base=msg+desp;
-				test[0].iov_len= size_msg_ - desp;
-				if (test[0].iov_len < 0)
-					test[0].iov_len = 0;
-    		} while (desp != size_msg_);
-			*/
+			uint64_t desp=size_msg_;
+
 			while (desp>0){
-				int bytes_read = readv(s_conec, test,1);
+				ssize_t bytes_read = readv(s_conec, test,1);
 				desp -= bytes_read;
 				test[0].iov_base += bytes_read;
 				test[0].iov_len -=bytes_read;
 				if (test[0].iov_len < 0)
 					test[0].iov_len = 0;
+			//	int offset =100- ( (desp * 100)/size_msg_ );
+			//	printf("Se ha recibido un %d percent \n", offset);
 			}//while
-			
+		
 			cola= get_cola(dic_colas,name_cola);
 			if (cola == NULL){
 				return_to_client(s_conec,'-1');

@@ -11,6 +11,8 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <inttypes.h>
+
 #define _XOPEN_SOURCE 700
 #define _POSIX_C_SOURCE 200809L
 
@@ -22,7 +24,7 @@ export BROKER_PORT=12345
 char *pchar;
 char buf[TAM];
 int leido;
-bool DEBUG = false; 
+bool DEBUG = true; 
 /*-----------------------------------------------*/
 int connect_socket(){
 
@@ -120,13 +122,18 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     struct iovec iov[5];
     pchar = 'P';
     int a= strlen(cola)+1;
-    if (tam > TAM_MAX_MESSAGE){
+    if (tam > TAM_MAX_MESSAGE || tam<0){
         perror("Tamaño del mensaje demasiado grande");
         return -1;
     }
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
+    if (DEBUG){
+        printf ("Tamaño del mensaje que estoy guardando: %"PRId64" \n", tam);
+       // print("Contenido del mensaje: \n%s \n", mensaje);
+    }
+    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar);
     iov[1].iov_base= &a;
@@ -139,7 +146,7 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
 
     iov[4].iov_base= mensaje;
     iov[4].iov_len= tam;
-    int desp= sizeof(pchar) + sizeof(a) + a + sizeof(tam) + tam;
+    uint64_t desp= sizeof(pchar) + sizeof(a) + a + sizeof(tam) + tam;
     /*
     do{
        desp+= writev(fd, iov,1);
@@ -151,7 +158,7 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     */
     int i=true;
     while (desp > 0) {
-        int bytes_written = writev(fd, iov,5);
+        ssize_t bytes_written = writev(fd, iov,5);
         if (bytes_written <= 0) {
             // handle errors
         }
@@ -165,10 +172,7 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
         if (iov[0].iov_len < 0)
             iov[0].iov_len=0; 
     } //while   
-    if (DEBUG){
-        printf ("Tamaño del mensaje que estoy guardando: %d \n", tam);
-       // print("Contenido del mensaje: \n%s \n", mensaje);
-    }
+
     return wait_response(fd);
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
@@ -226,10 +230,10 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
 	struct iovec test[1];
 	test[0].iov_base = *mensaje;
 	test[0].iov_len = *tam;
-	ssize_t desp=*tam;
+	uint64_t desp=*tam;
 
 	while (desp>0){
-		int bytes_read = readv(fd, test,1);
+		ssize_t bytes_read = readv(fd, test,1);
 		desp -= bytes_read;
 		test[0].iov_base += bytes_read;
 		test[0].iov_len -=bytes_read;
