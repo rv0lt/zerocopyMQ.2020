@@ -58,16 +58,14 @@ int connect_socket(){
 }
 /*-------------------------------------------------*/
 int wait_response(int fd){
-    if ( (leido=read(fd, buf, sizeof(pchar))) < 0){
+    int res;
+    if ( (leido=read(fd, &res, sizeof(res))) < 0){
 		perror("error en read");
 		close(fd);
 		return -1;
     }
     close(fd);
-    if (buf[0]!= '0')
-        return -1;
-    else 
-        return 0;
+    return res;
 }
 /*----------------------------------------------------------------------------*/
 int createMQ(const char *cola){
@@ -126,6 +124,10 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
         perror("Tamaño del mensaje demasiado grande");
         return -1;
     }
+    if (a> TAM){
+        perror("Nombre de cola demasiado grande");
+        return -1;
+    }
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
@@ -142,25 +144,16 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     iov[2].iov_len= a; 
     iov[3].iov_base= &tam;
     iov[3].iov_len= sizeof(tam);
-//    writev(fd, iov,4);
-
     iov[4].iov_base= mensaje;
     iov[4].iov_len= tam;
-    uint64_t desp= sizeof(pchar) + sizeof(a) + a + sizeof(tam) + tam;
-    /*
-    do{
-       desp+= writev(fd, iov,1);
-       iov[0].iov_base= mensaje+ desp;
-       iov[0].iov_len= tam - desp;
-       if (iov[0].iov_len < 0)
-            iov[0].iov_len=0; 
-    } while (desp != tam);
-    */
+    uint32_t desp= sizeof(pchar) + sizeof(a) + a + sizeof(tam) + tam;
+
     int i=true;
     while (desp > 0) {
         ssize_t bytes_written = writev(fd, iov,5);
         if (bytes_written <= 0) {
-            // handle errors
+            perror("writev");
+            return -1;
         }
         desp -= bytes_written;
         if(i){
@@ -171,16 +164,14 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
         iov[4].iov_len -= bytes_written;
         if (iov[0].iov_len < 0)
             iov[0].iov_len=0; 
-    } //while   
-
+    } //while   S
     return wait_response(fd);
 }
 int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     int fd;
     struct iovec iov[3];
-//    int size_msg;
     int a= strlen(cola)+1;
-    if (sizeof(cola) > TAM){
+    if (a> TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
@@ -204,14 +195,8 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
 	if ( (leido=read(fd,tam, sizeof(uint32_t))) < 0){
 		perror("error en read");
 		close(fd);
-		return 1;
+		return -1;
     }//read
-	//printf("_-_-_-%d\n", size_msg);
-	//printf("_-_-_-%d\n", leido);
-
-    //memcpy(tam, &size_msg, leido);
-    //printf("_-_-_-%d\n", *tam);
-
     if(*tam == 0){
         if (!blocking)
             return 0;
@@ -227,25 +212,11 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
         return -1;
     else {    
 	*mensaje = malloc(*tam);
-	struct iovec test[1];
-	test[0].iov_base = *mensaje;
-	test[0].iov_len = *tam;
-	uint64_t desp=*tam;
-
-	while (desp>0){
-		ssize_t bytes_read = readv(fd, test,1);
-		desp -= bytes_read;
-		test[0].iov_base += bytes_read;
-		test[0].iov_len -=bytes_read;
-		if (test[0].iov_len < 0)
-			test[0].iov_len = 0;
-	}//while
-    /*if ( (leido=read(fd, *mensaje, *tam)) < 0){
-		perror("error en read");
-		close(fd);
-		return -1;
-    }//read
-    */
+    if ( recv(fd, *mensaje, *tam, MSG_WAITALL) < 0 ){
+        perror("error en recv");
+        close(fd);
+        return -1;
+    }
     if (DEBUG)
         printf ("Tamaño del mensaje que estoy leeyendo: %d \n", *tam);
        // print("Contenido del mensaje: \n%s \n", mensaje);    return 1;

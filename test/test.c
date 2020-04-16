@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     int fd_msg1, fd_msg ,fd_cola, fd_new;
     struct stat st_msg1, st_msg,st_cola, st_new;
-    fd_msg = open("../../../../DON4.txt", O_RDONLY);
+    fd_msg = open("../../../../DON3.txt", O_RDONLY);
     fd_cola = open("colanotanlarga.txt", O_RDONLY);
 //  fd_cola = open("colalarga.txt", O_RDONLY);
     fstat(fd_msg, &st_msg);

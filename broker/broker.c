@@ -9,19 +9,17 @@
 #include <netinet/in.h>
 #include <stdbool.h>
 #include <stddef.h>
-
+#include <limits.h>
 #define TAM  65536 //2¹⁶
 
 bool DEBUG = false; 
 int par = 0;
 /*----------------------------------------------------*/
-void return_to_client(int fd, char* aux){
+void return_to_client(int fd, int aux){
 	struct iovec iov[1];    
-	char *pchar;
-	pchar= aux;
 
-    iov[0].iov_base= &pchar;
-    iov[0].iov_len= sizeof(pchar);  
+    iov[0].iov_base= &aux;
+    iov[0].iov_len= sizeof(aux);  
     
 	writev(fd, iov,1);
 }
@@ -47,26 +45,18 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam,  bool vacio){
 
 		iov[0].iov_base=&a;
 		iov[0].iov_len=sizeof(a);
-		//writev(fd, iov,1);
 
 		iov[1].iov_base=msg;
 		iov[1].iov_len=a;
-    	uint64_t desp= sizeof(a) + a;
+    	uint32_t desp= sizeof(a) + a;
 
-    	/*
-		do{
-      		desp+= writev(fd, iov,1);
-       		iov[0].iov_base= msg + desp; 
-			iov[0].iov_len = a - desp;
-			if (iov[0].iov_len < 0)
-				iov[0].iov_len=0;
-   		} while (desp != tam);
-		*/
-	    int i=true;
+
+	    bool i=true;
     	while (desp > 0) {
         	ssize_t bytes_written = writev(fd, iov,2);
         	if (bytes_written <= 0) {
-            	// handle errors
+            	perror("writev");
+				return;
         	}
         	desp -= bytes_written;
         	if(i){
@@ -105,7 +95,7 @@ void print_cola(void *v){
 		par = 1;
 	}else{
 	void * msg = v;
-//	printf("%s\n", msg);
+	printf("%s\n", msg);
 	par=0;
 	}
 }
@@ -212,7 +202,7 @@ int main(int argc, char *argv[]) {
 		
         if ( (leido=read(s_conec, buf, sizeof(pchar))) < 0){
 			perror("error en read");
-			return_to_client(s_conec,'-1');
+			return_to_client(s_conec,-1);
 			close(s);
 			close(s_conec);
 			return 1;
@@ -225,26 +215,26 @@ int main(int argc, char *argv[]) {
 		case 'C': //Crear una nueva cola
 			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read  
 
 			name_cola = malloc(size_cola);
-			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
-				perror("error en read");
-				return_to_client(s_conec,'-1');
+			if ( recv (s_conec, name_cola, size_cola, MSG_WAITALL) < 0){
+				perror("error en recv");
+				return_to_client(s_conec, -1);
 				close(s);
 				close(s_conec);
-				return 1;
-        	}//read
+			}
+
 			if (DEBUG)
 				printf("He creado la cola %s de tamano %d \n", name_cola, size_cola-1);
 			cola = cola_create();
 			if (cola == NULL){
 				perror("Error al crear la estructura cola");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				close(s);
 				close(s_conec);
 				return 1;
@@ -252,7 +242,7 @@ int main(int argc, char *argv[]) {
 			if (dic_put(dic_colas, name_cola, cola) <0){
 				if (DEBUG)
 					perror("Nombre de cola ya existente \n");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				continue;
 			}//if
 			if (DEBUG)
@@ -262,25 +252,24 @@ int main(int argc, char *argv[]) {
 		case 'D': //Destruir una cola (y sus mensajes)
 			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read
 			name_cola = malloc(size_cola);
-			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
-				perror("error en read");
-				return_to_client(s_conec,'-1');
+			if ( recv (s_conec, name_cola, size_cola, MSG_WAITALL) < 0){
+				perror("error en recv");
+				return_to_client(s_conec, -1);
 				close(s);
 				close(s_conec);
-				return 1;
-        	}//read
+			}
 			if(DEBUG)
 				printf("He destruido la cola %s de tamaño %d \n", name_cola, size_cola-1);
 			if (dic_remove_entry(dic_colas, name_cola, free_cola) < 0){
 				if (DEBUG)
 					perror("No existe ese nombre de cola \n");
-				return_to_client(s_conec, '-1');
+				return_to_client(s_conec, -1);
 				continue;
 			}
 			if (DEBUG)
@@ -290,22 +279,21 @@ int main(int argc, char *argv[]) {
 		case 'P': //Poner un nuevo mensaje a una cola determinada
 			if ( (leido=read(s_conec,&size_cola , sizeof(int))) < 0){
 				perror("error en read");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				close(s);
 				close(s_conec);
 				return 1;
         	}//read
 			name_cola = malloc(size_cola);
-			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
-				perror("error en read");
-				return_to_client(s_conec,'-1');
+			if ( recv (s_conec, name_cola, size_cola, MSG_WAITALL) < 0){
+				perror("error en recv");
+				return_to_client(s_conec, -1);
 				close(s);
 				close(s_conec);
-				return 1;
-        	}//read
+			}
 			if ( (leido=read(s_conec,&size_msg_ , sizeof(uint32_t))) < 0){
 				perror("error en read");
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				close(s);
 				close(s_conec);
 				return 1;
@@ -315,30 +303,20 @@ int main(int argc, char *argv[]) {
 				printf("He seleccionado la cola %s \n", name_cola);			
 				printf("Tamaño del mensaje a introducir %d\n", size_msg_);
 			}
-			*/
-			msg = malloc(size_msg_);
-			struct iovec test[1];
-			test[0].iov_base = msg;
-			test[0].iov_len = size_msg_;
-			uint64_t desp=size_msg_;
-
-			while (desp>0){
-				ssize_t bytes_read = readv(s_conec, test,1);
-				desp -= bytes_read;
-				test[0].iov_base += bytes_read;
-				test[0].iov_len -=bytes_read;
-				if (test[0].iov_len < 0)
-					test[0].iov_len = 0;
-			//	int offset =100- ( (desp * 100)/size_msg_ );
-			//	printf("Se ha recibido un %d percent \n", offset);
-			}//while
-		
+			*/			
 			cola= get_cola(dic_colas,name_cola);
 			if (cola == NULL){
-				return_to_client(s_conec,'-1');
+				return_to_client(s_conec,-1);
 				free(name_cola);
 				continue;				
 			}
+			msg = malloc(size_msg_);
+			if ( recv (s_conec, msg, size_msg_, MSG_WAITALL) < 0){
+				perror("error en recv");
+				close(s);
+				close(s_conec);
+			}
+
 			cola_push_back(cola, size_msg_);
 			cola_push_back(cola, msg);
 			/*
@@ -360,13 +338,12 @@ int main(int argc, char *argv[]) {
 				return 1;
         	}//read
 			name_cola = malloc(size_cola);
-			if ( (leido=read(s_conec, name_cola, size_cola)) < 0){
-				perror("error en read");
-				//return_to_client(s_conec,'-1');
+			if ( recv (s_conec, name_cola, size_cola, MSG_WAITALL) < 0){
+				perror("error en recv");
+				return_to_client(s_conec, -1);
 				close(s);
 				close(s_conec);
-				return 1;
-        	}//read
+			}			
 			/*
 			if (DEBUG)
 				printf("He seleccionado la cola %s  para leer \n", name_cola);	
@@ -375,15 +352,6 @@ int main(int argc, char *argv[]) {
 			size_msg_=NULL;
 			msg=NULL;
 			cola= get_cola(dic_colas,name_cola);
-			/*
-			if (cola == NULL){
-				send_msg_to_client(s_conec,NULL, 0, false);
-				//Le indico al cliente que no existe esta cola (msg =NULL y tam = 0)
-				free(name_cola);
-				close(s_conec);
-				continue;
-			}
-			*/
 			if (cola != NULL){
 				//La cola existe
 				size_msg_ = get_data_from_cola(cola);
@@ -396,47 +364,15 @@ int main(int argc, char *argv[]) {
 			if (DEBUG){
 				printf("Tamaño del mensaje a leer %d\n", size_msg_);
 			}
-*/
-			send_msg_to_client(s_conec, msg, size_msg_, vacio);
-			
+			*/
+			send_msg_to_client(s_conec, msg, size_msg_, vacio);	
 			free(name_cola);	
 			//He obtenido la cola que almacena el mensaje
-			/*
-			size_msg_ = get_data_from_cola(cola);
-			if (size_msg_ == NULL){
-				send_msg_to_client(s_conec,NULL, 0, true);
-				//Le indico al cliente que la cola está vacia (vacio =true)
-				free(name_cola);
-				close(s_conec);
-				continue;
-			}
-			//He obtenido el tamaño del mensaje
-			msg = get_data_from_cola(cola);	
-			
-			if (msg == NULL){
-				send_msg_to_client(s_conec,NULL, 0, true);
-				//Le indico al cliente que la cola esta vacia (vacio=true)
-				free(name_cola);
-				close(s_conec);
-				continue;
-			}
-			
-			//He obtenido el mensaje
-			*/
-			
-
-			
-
-		//	send_msg_to_client(s_conec, msg, size_msg_, false);	
-			//Le mando al cliente el mensaje y su tamaño
-			//free(name_cola);
 			break;
 		//FIN DEL CASE G
-		//default: // Lectura bloqueante de mensaje
-		//	break;
 		}// switch
 		if (buf[0]!= 'G'){
-			return_to_client(s_conec, '0');
+			return_to_client(s_conec, 0);
 		}
 		close(s_conec);
 	}
