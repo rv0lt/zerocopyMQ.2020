@@ -13,18 +13,15 @@
 #include <limits.h>
 #include <inttypes.h>
 
-#define _XOPEN_SOURCE 700
-#define _POSIX_C_SOURCE 200809L
-
 /*
 export BROKER_HOST=Rv0lt
 export BROKER_PORT=12345
 */
 
 char *pchar;
-char buf[TAM];
 int leido;
 bool DEBUG = true; 
+
 /*-----------------------------------------------*/
 int connect_socket(){
 
@@ -76,7 +73,7 @@ int createMQ(const char *cola){
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-    if (strlen(cola)+1 > TAM){
+    if (a > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
@@ -96,15 +93,13 @@ int destroyMQ(const char *cola){
     struct iovec iov[3];
     pchar = 'D';
     int a= strlen(cola)+1;
-    if (sizeof(cola)+1 > TAM){
+    if (a > TAM){
         perror("Nombre de cola demasiado grande");
         return -1;
     }
-
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;
     iov[1].iov_base= &a;
@@ -112,7 +107,6 @@ int destroyMQ(const char *cola){
     iov[2].iov_base= cola;
     iov[2].iov_len= a;  
     writev(fd, iov,3);
-
     return wait_response(fd);
 }
 int put(const char *cola, const void *mensaje, uint32_t tam) {
@@ -135,7 +129,6 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
         printf ("Tamaño del mensaje que estoy guardando: %"PRId64" \n", tam);
        // print("Contenido del mensaje: \n%s \n", mensaje);
     }
-    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar);
     iov[1].iov_base= &a;
@@ -147,7 +140,6 @@ int put(const char *cola, const void *mensaje, uint32_t tam) {
     iov[4].iov_base= mensaje;
     iov[4].iov_len= tam;
     uint32_t desp= sizeof(pchar) + sizeof(a) + a + sizeof(tam) + tam;
-
     int i=true;
     while (desp > 0) {
         ssize_t bytes_written = writev(fd, iov,5);
@@ -178,12 +170,10 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     if ((fd= connect_socket(&fd))<0){
         return -1;
     }
-
     if(!blocking)
         pchar = 'G';
     else
         pchar = 'B';
-    
     iov[0].iov_base= &pchar;
     iov[0].iov_len= sizeof(pchar) ;    
     iov[1].iov_base= &a;
@@ -191,7 +181,6 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
     iov[2].iov_base= cola;
     iov[2].iov_len= a;    
     writev(fd, iov,3);
-    
 	if ( (leido=read(fd,tam, sizeof(uint32_t))) < 0){
 		perror("error en read");
 		close(fd);
@@ -216,9 +205,9 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
         perror("error en recv");
         close(fd);
         return -1;
-    }
+    }//recv
     if (DEBUG)
         printf ("Tamaño del mensaje que estoy leeyendo: %d \n", *tam);
        // print("Contenido del mensaje: \n%s \n", mensaje);    return 1;
-    }
+    }//tam > 0
 }
