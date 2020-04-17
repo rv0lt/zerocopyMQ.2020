@@ -373,7 +373,6 @@ int main(int argc, char *argv[])
 					if (desc != NULL){
 						res = send_msg_to_client(desc, msg, size_msg_, false);
 						// Si la cola se ha quedado vacia la elimino
-						//close(desc);
 						len = cola_length(cola_aux);
 						if (len < 0){
 							read_error(s, s_conec, "Error en cola_lenght");
@@ -384,11 +383,10 @@ int main(int argc, char *argv[])
 							if (DEBUG)
 								perror("No deberia entrar nunca \n");
 							printf("TEST\n");
-							//return_to_client(s_conec, -1);
 							break;
-							} //dic_remove_entry						
+							}//dic_remove_entry						
 						}//len ==0
-					}// desc != null
+					}//desc != null
 				}//while
 				if (res > 0){
 					close(desc);
