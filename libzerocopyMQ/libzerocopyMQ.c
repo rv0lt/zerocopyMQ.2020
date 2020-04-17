@@ -192,11 +192,23 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
         else{
         //La cola estaba vacia y la operacion era el get bloqueante
         //TODO dejar bloqueado al proceso y esperar a que le llegue un mensaje
-        
-        printf("No implementado aun\n");
+	    if ( (leido=read(fd,tam, sizeof(uint32_t))) < 0){
+		    perror("error en read");
+		    close(fd);
+		    return -1;
+        }//read
+        if (*tam == -1)
+            return -1;
+        if ( recv(fd, *mensaje, *tam, MSG_WAITALL) < 0 ){
+            perror("error en recv");
+            close(fd);
+            return -1;
+        }//recv
+        if (DEBUG)
+            printf ("Tamaño del mensaje que estoy leeyendo: %d \n", *tam);
         return 0;
-        }
-    }
+        }// cola vacia y lectura bloqueante
+    }// cola vacia
     else if (*tam == -1)
         return -1;
     else {    
@@ -210,4 +222,5 @@ int get(const char *cola, void **mensaje, uint32_t *tam, bool blocking) {
         printf ("Tamaño del mensaje que estoy leeyendo: %d \n", *tam);
        // print("Contenido del mensaje: \n%s \n", mensaje);    return 1;
     }//tam > 0
+    return 0;
 }
