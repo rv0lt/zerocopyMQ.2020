@@ -31,7 +31,7 @@ void return_to_client(int fd, int aux)
 
 	writev(fd, iov, 1);
 }
-void send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
+int send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 {
 	struct iovec iov[2];
 	if (vacio)
@@ -41,6 +41,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 		iov[0].iov_len = sizeof(a);
 		writev(fd, iov, 1);
 		//El cliente recibe un size_msg=0 que le indica que la cola está vacia
+		return 2;
 	}
 	else if (msg == NULL)
 	{
@@ -49,9 +50,15 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 		iov[0].iov_len = sizeof(a);
 		writev(fd, iov, 1);
 		//El cliente recibe un size_msg=-1 que le indica que no exisitia esa cola
+		return 3;
 	}
 	else
 	{
+		char *bf[2];
+		if (recv(fd,  bf, sizeof(bf), MSG_PEEK | MSG_DONTWAIT) == 0) {
+			// if recv returns zero, that means the connection has been closed:
+			return -2;
+		}
 		uint32_t a = tam;
 		iov[0].iov_base = &a;
 		iov[0].iov_len = sizeof(a);
@@ -65,7 +72,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 			if (bytes_written <= 0)
 			{
 				perror("writev");
-				return;
+				return -1;
 			}
 			desp -= bytes_written;
 			if (i)
@@ -79,6 +86,7 @@ void send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 				iov[1].iov_len = 0;
 		} //while
 		  //El cliente recibe un size_msg>0 y el mensaje correspondiente
+		return 5;
 	}
 }
 /*---------------------------------------------------*/
@@ -356,31 +364,40 @@ int main(int argc, char *argv[])
 			*/
 			struct cola *cola_aux = get_cola(dic_bloqueados, name_cola);
 			if (cola_aux != NULL){
-				int desc = get_data_from_cola(cola_aux);
-				if (desc != NULL){
-					send_msg_to_client(desc, msg, size_msg_, false);
-					// Si la cola se ha quedado vacia la elimino
-					int len = cola_length(cola_aux);
-					if (len < 0){
-						read_error(s, s_conec, "Error en cola_lenght");
-						return 1;
-					}
-					if (len == 0){
-						if (dic_remove_entry(dic_bloqueados, name_cola, free_cola) < 0){
-						if (DEBUG)
-							perror("No deberia entrar nunca \n");
-						return_to_client(s_conec, -1);
-						continue;
-						} //dic_remove_entry						
-					}//len ==0
-					//see_colaB(cola_aux);
-				}// desc != null
-				//see_dic(dic_bloqueados);
-				free(name_cola);
-				break;
+				int desc;
+				int len = cola_length(cola_aux);
+				int res = -1;
+				while (desc !=NULL && len > 0 && res < 0){
+					desc = get_data_from_cola(cola_aux);
+					if (desc != NULL){
+						res = send_msg_to_client(desc, msg, size_msg_, false);
+						// Si la cola se ha quedado vacia la elimino
+						len = cola_length(cola_aux);
+						if (len < 0){
+							read_error(s, s_conec, "Error en cola_lenght");
+							return 1;
+						}
+						//printf("___ %d\n", len);
+						if (len == 0){
+							if (dic_remove_entry(dic_bloqueados, name_cola, free_cola) < 0){
+							if (DEBUG)
+								perror("No deberia entrar nunca \n");
+							return_to_client(s_conec, -1);
+							break;
+							} //dic_remove_entry						
+						}//len ==0
+						//see_colaB(cola_aux);
+					}// desc != null
+					//see_dic(dic_bloqueados);
+					//printf("------- %d\n", res);
+				}//while
+				if (res > 0){
+					free(name_cola);
+					break;
+				}
 			}//envio a cola bloqueada
 
-
+			//printf("aaaaaaa\n");
 			cola_push_back(cola, size_msg_);
 			cola_push_back(cola, msg);
 			/*
