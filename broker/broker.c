@@ -57,6 +57,7 @@ int send_msg_to_client(int fd, void *msg, uint32_t tam, bool vacio)
 		char *bf[2];
 		if (recv(fd,  bf, sizeof(bf), MSG_PEEK | MSG_DONTWAIT) == 0) {
 			// if recv returns zero, that means the connection has been closed:
+			close(fd);
 			return -2;
 		}
 		uint32_t a = tam;
@@ -372,32 +373,29 @@ int main(int argc, char *argv[])
 					if (desc != NULL){
 						res = send_msg_to_client(desc, msg, size_msg_, false);
 						// Si la cola se ha quedado vacia la elimino
+						//close(desc);
 						len = cola_length(cola_aux);
 						if (len < 0){
 							read_error(s, s_conec, "Error en cola_lenght");
 							return 1;
 						}
-						//printf("___ %d\n", len);
 						if (len == 0){
 							if (dic_remove_entry(dic_bloqueados, name_cola, free_cola) < 0){
 							if (DEBUG)
 								perror("No deberia entrar nunca \n");
-							return_to_client(s_conec, -1);
+							printf("TEST\n");
+							//return_to_client(s_conec, -1);
 							break;
 							} //dic_remove_entry						
 						}//len ==0
-						//see_colaB(cola_aux);
 					}// desc != null
-					//see_dic(dic_bloqueados);
-					//printf("------- %d\n", res);
 				}//while
 				if (res > 0){
+					close(desc);
 					free(name_cola);
 					break;
 				}
 			}//envio a cola bloqueada
-
-			//printf("aaaaaaa\n");
 			cola_push_back(cola, size_msg_);
 			cola_push_back(cola, msg);
 			/*
